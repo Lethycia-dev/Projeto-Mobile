@@ -25,31 +25,22 @@
 const express = require('express');
 const cors = require('cors');
 const sqlite3 = require('sqlite3').verbose();
+const authRouter = require('.routes/auth');
 
+//criando o servidor
 const app = express();
 
 // Configuração de middleware
 app.use(cors());
 app.use(express.json()); // Substitui body-parser para JSON
 
-const db = new sqlite3.Database('.tarefas.db',(err) => 
-{
-    if (err) {
-        console.error("Erro ao conectar ao Sqlite: ",err);
-
-    } else {
-        console.error("Conectado ao Sqlite: ")
-    }
-}
-);
-
 
 db.serialize(() => {
     db.run(
-        'CREATE TABLE IF NOT EXIXSTS usuarios(id INTEGER PRIMARY KEY AUTOINCREMENT, email TEXT UNIQUE NOT NULL, password TEXT NOT NULL)'
+        'CREATE TABLE IF NOT EXISTS usuarios(id INTEGER PRIMARY KEY AUTOINCREMENT, email TEXT UNIQUE NOT NULL, password TEXT NOT NULL)'
     );
     db.run(
-        'CREATE TABLE IF NOT EXIXSTS tarefas(id INTEGER PRIMARY KEY AUTOINCREMENT, titulo TEXT NOT NULL, userId INTEGER NOT NULL, FOREIGN KEY (userId) REFERENCES usuarios(id))'
+        'CREATE TABLE IF NOT EXISTS tarefas(id INTEGER PRIMARY KEY AUTOINCREMENT, titulo TEXT NOT NULL, userId INTEGER NOT NULL, FOREIGN KEY (userId) REFERENCES usuarios(id))'
     );
 });
 
@@ -59,6 +50,8 @@ app.use(express.urlencoded({ extended: true })); // Para dados de formulário co
 app.get('/api/test', (req, res) => {
     res.json({ message: 'Backend Funcionando e conectado' });
 });
+
+app.use('api/auth', authRouter);
 
 // Definir a porta do servidor
 const PORT = 3001;
